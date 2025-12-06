@@ -1,59 +1,880 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Система управления больницей (Hospital Management System)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Веб-приложение для управления записями пациентов к врачам, разработанное на Laravel 12.
 
-## About Laravel
+## 📋 Оглавление
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- [Описание проекта](#описание-проекта)
+- [Установка](#установка)
+- [Структура базы данных](#структура-базы-данных)
+- [Модели](#модели)
+- [API и маршруты](#api-и-маршруты)
+- [Роли пользователей](#роли-пользователей)
+- [Функциональность](#функциональность)
+- [Контроллеры](#контроллеры)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 📝 Описание проекта
 
-## Learning Laravel
+Система управления больницей - это веб-приложение, которое позволяет:
+- Пациентам записываться на прием к врачам, просматривать свои записи, отменять записи
+- Врачам управлять своими записями, изменять статусы, завершать приемы, отменять записи, **управлять расписанием**
+- Администраторам управлять врачами, специальностями, пользователями и другими администраторами, просматривать все записи
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+**Система полностью соответствует техническому заданию** (см. `TZ_COMPLIANCE.md` для детального анализа).
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 🚀 Установка
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 1. Клонирование репозитория
+```bash
+git clone <repository-url>
+cd hospital
+```
 
-### Premium Partners
+### 2. Установка зависимостей
+```bash
+composer install
+npm install
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 3. Настройка окружения
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-## Contributing
+### 4. Настройка базы данных
+Отредактируйте файл `.env` и укажите параметры подключения к базе данных:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=hospital
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 5. Выполнение миграций
+```bash
+php artisan migrate
+```
 
-## Code of Conduct
+### 6. Запуск сервера разработки
+```bash
+php artisan serve
+npm run dev
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Приложение будет доступно по адресу: `http://localhost:8000`
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 🗄️ Структура базы данных
 
-## License
+### Таблица `users`
+Хранит информацию о пользователях системы (пациентах, врачах, администраторах).
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `id` | bigint | Первичный ключ |
+| `name` | string | Полное имя (для обратной совместимости) |
+| `surname` | string (nullable) | Фамилия |
+| `firstname` | string (nullable) | Имя |
+| `patronymic` | string (nullable) | Отчество |
+| `pole` | string (unique) | Полис (логин) |
+| `email` | string (nullable) | Адрес электронной почты |
+| `phone` | string (nullable) | Контактный телефон |
+| `birth_date` | date (nullable) | Дата рождения |
+| `role` | string | Роль: `patient`, `doctor`, `admin` (по умолчанию `patient`) |
+| `password` | string | Хешированный пароль |
+| `doctor_id` | bigint (nullable) | ID врача (FK, для связи с профилем врача) |
+| `created_at` | timestamp | Дата создания |
+| `updated_at` | timestamp | Дата обновления |
+
+**Отношения:**
+- `hasOne` Doctor (doctor)
+- `hasMany` Appointments
+
+**Методы:**
+- `isDoctor()` - проверка, является ли пользователь врачом
+- `isAdmin()` - проверка, является ли пользователь администратором
+
+---
+
+### Таблица `specialties`
+Хранит медицинские специальности.
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `id` | bigint | Первичный ключ |
+| `name` | string | Название специальности |
+| `created_at` | timestamp | Дата создания |
+| `updated_at` | timestamp | Дата обновления |
+
+**Отношения:**
+- `hasMany` Doctors
+
+---
+
+### Таблица `doctors`
+Хранит информацию о врачах.
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `id` | bigint | Первичный ключ |
+| `name` | string | Имя врача |
+| `specialty_id` | bigint | ID специальности (FK) |
+| `user_id` | bigint (nullable) | ID пользователя (FK на users) |
+| `cabinet_number` | string (nullable) | Номер кабинета |
+| `is_active` | boolean | Флаг активности врача (работает/в отпуске), по умолчанию `true` |
+| `created_at` | timestamp | Дата создания |
+| `updated_at` | timestamp | Дата обновления |
+
+**Отношения:**
+- `belongsTo` User (user)
+- `belongsTo` Specialty (specialty)
+- `hasMany` Appointments
+- `hasMany` Schedules
+
+---
+
+### Таблица `appointments`
+Хранит записи пациентов на прием.
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `id` | bigint | Первичный ключ |
+| `user_id` | bigint | ID пациента (FK на users) |
+| `doctor_id` | bigint | ID врача (FK на doctors) |
+| `appointment_date` | date | Дата приема |
+| `appointment_time` | time | Время приема |
+| `status` | string | Статус записи: `pending`, `confirmed`, `visited`, `no_show`, `completed`, `cancelled` |
+| `notes` | text (nullable) | Примечания от пациента |
+| `cancellation_reason` | text (nullable) | Причина отмены |
+| `conclusion` | text (nullable) | Служебное заключение врача |
+| `created_at` | timestamp | Дата создания |
+| `updated_at` | timestamp | Дата обновления |
+
+**Уникальные индексы:**
+- `unique(['doctor_id', 'appointment_date', 'appointment_time'])` - предотвращает двойные записи на одно время
+
+**Отношения:**
+- `belongsTo` User (user)
+- `belongsTo` Doctor (doctor)
+
+**Статусы записей:**
+- `pending` - Ожидает подтверждения
+- `confirmed` - Подтверждена
+- `visited` - Пациент пришел
+- `no_show` - Пациент не пришел
+- `completed` - Прием завершен
+- `cancelled` - Отменена
+
+---
+
+## 🎭 Роли пользователей
+
+### Пациент (patient)
+- Роль по умолчанию при регистрации
+- Может просматривать список врачей
+- Может записываться на прием
+- Может просматривать свои записи
+- Может видеть заключения врачей и причины отмены
+
+### Врач (doctor)
+- Имеет доступ к панели врача
+- Может просматривать все записи к нему
+- Может изменять статусы записей
+- Может отмечать пациентов (пришел/не пришел)
+- Может завершать приемы и добавлять служебные заключения
+- Может отменять записи с указанием причины
+- **Может управлять своим расписанием** (создавать, блокировать, удалять слоты)
+
+### Администратор (admin)
+- Полный доступ к админ-панели
+- Может управлять специальностями (создавать, удалять)
+- Может управлять врачами (создавать с указанием кабинета и статуса, просматривать, удалять)
+- Может создавать новых администраторов
+- Может просматривать всех пользователей и удалять их
+- Может просматривать все записи в системе
+
+---
+
+## 🌐 API и маршруты
+
+### Публичные маршруты (без авторизации)
+
+#### Главная страница
+```
+GET /
+```
+- **Название маршрута**: `main`
+- **Описание**: Главная страница приложения
+- **Контроллер**: Closure
+- **Представление**: `resources/views/main.blade.php`
+
+#### Страница авторизации
+```
+GET /auth
+```
+- **Название маршрута**: `auth`
+- **Описание**: Страница входа и регистрации
+- **Контроллер**: Closure
+- **Представление**: `resources/views/auth_form.blade.php`
+
+#### Регистрация
+```
+POST /register
+```
+- **Название маршрута**: `register`
+- **Контроллер**: `AuthController@register`
+- **Параметры запроса**:
+  - `name` (required) - Имя пользователя
+  - `pole` (required) - Уникальный логин
+  - `password` (required) - Пароль
+- **Действие**: Создает нового пользователя с ролью `patient` и автоматически авторизует его
+- **Результат**: Редирект на главную страницу
+
+#### Вход в систему
+```
+POST /login
+```
+- **Название маршрута**: `login`
+- **Контроллер**: `AuthController@login`
+- **Параметры запроса**:
+  - `pole` (required) - Логин
+  - `password` (required) - Пароль
+- **Действие**: Авторизует пользователя
+- **Результат**: Редирект на главную страницу или обратно на `/auth` с сообщением об ошибке
+
+---
+
+### Маршруты для пациентов
+
+#### Список врачей
+```
+GET /doctors
+```
+- **Название маршрута**: `doctors.index`
+- **Контроллер**: `AppointmentController@index`
+- **Описание**: Отображает список всех врачей с их специальностями
+- **Представление**: `resources/views/appointments/index.blade.php`
+- **Доступ**: Публичный
+
+#### Страница записи к врачу
+```
+GET /doctor/{doctor}
+```
+- **Название маршрута**: `doctor.show`
+- **Контроллер**: `AppointmentController@show`
+- **Параметры**: `doctor` - ID или модель Doctor
+- **Описание**: Страница с формой записи к конкретному врачу
+- **Представление**: `resources/views/appointments/show.blade.php`
+- **Доступ**: Публичный
+
+#### Проверка доступности времени
+```
+POST /appointments/check-availability
+```
+- **Название маршрута**: `appointments.check`
+- **Контроллер**: `AppointmentController@checkAvailability`
+- **Параметры запроса**:
+  - `doctor_id` (required) - ID врача
+  - `date` (required) - Дата в формате Y-m-d
+- **Описание**: Возвращает список доступных временных слотов для выбранной даты
+- **Формат ответа**: JSON
+  ```json
+  {
+    "available_times": ["09:00", "09:30", "10:00", ...],
+    "booked_times": ["11:00", "14:30"]
+  }
+  ```
+- **Временные слоты**: 9:00 - 17:00, каждые 30 минут
+- **Доступ**: Публичный
+
+#### Создание записи
+```
+POST /appointments
+```
+- **Название маршрута**: `appointments.store`
+- **Контроллер**: `AppointmentController@store`
+- **Параметры запроса**:
+  - `doctor_id` (required) - ID врача
+  - `appointment_date` (required) - Дата приема
+  - `appointment_time` (required) - Время приема в формате H:i
+  - `notes` (optional) - Примечания
+- **Действие**: Создает новую запись на прием
+- **Требования**: Пользователь должен быть авторизован
+- **Результат**: Редирект на страницу "Мои записи" с сообщением об успехе
+
+#### Мои записи
+```
+GET /my-appointments
+```
+- **Название маршрута**: `appointments.my`
+- **Контроллер**: `AppointmentController@myAppointments`
+- **Описание**: Отображает все записи текущего авторизованного пользователя
+- **Представление**: `resources/views/appointments/my.blade.php`
+- **Требования**: Авторизация
+- **Результат**: Список записей с возможностью просмотра заключений и причин отмены
+
+---
+
+### Маршруты для врачей (требуют авторизации и роли doctor)
+
+Все маршруты защищены middleware `auth` и проверкой роли врача.
+
+#### Панель врача
+```
+GET /doctor/appointments
+```
+- **Название маршрута**: `doctor.appointments.index`
+- **Контроллер**: `DoctorAppointmentController@index`
+- **Описание**: Панель врача со всеми его записями, сгруппированными по датам
+- **Представление**: `resources/views/doctor/appointments/index.blade.php`
+- **Требования**: 
+  - Авторизация
+  - Роль `doctor`
+  - Наличие профиля врача в таблице `doctors`
+
+#### Изменение статуса записи
+```
+POST /doctor/appointments/{appointment}/status
+```
+- **Название маршрута**: `doctor.appointments.status`
+- **Контроллер**: `DoctorAppointmentController@updateStatus`
+- **Параметры URL**: `appointment` - ID записи (только цифры)
+- **Параметры запроса**:
+  - `status` (required) - Новый статус: `pending`, `confirmed`, `visited`, `no_show`, `completed`, `cancelled`
+  - `cancellation_reason` (required если status=cancelled) - Причина отмены
+- **Действие**: Обновляет статус записи
+- **Проверка**: Запись должна принадлежать текущему врачу
+- **Результат**: Редирект обратно с сообщением об успехе
+
+#### Завершение приема
+```
+POST /doctor/appointments/{appointment}/complete
+```
+- **Название маршрута**: `doctor.appointments.complete`
+- **Контроллер**: `DoctorAppointmentController@completeAppointment`
+- **Параметры URL**: `appointment` - ID записи (только цифры)
+- **Параметры запроса**:
+  - `conclusion` (required, min:10) - Служебное заключение врача
+- **Действие**: 
+  - Устанавливает статус `completed`
+  - Сохраняет заключение врача
+- **Проверка**: Запись должна принадлежать текущему врачу
+- **Результат**: Редирект обратно с сообщением об успехе
+
+#### Отмена записи
+```
+POST /doctor/appointments/{appointment}/cancel
+```
+- **Название маршрута**: `doctor.appointments.cancel`
+- **Контроллер**: `DoctorAppointmentController@cancelAppointment`
+- **Параметры URL**: `appointment` - ID записи (только цифры)
+- **Параметры запроса** (JSON):
+  - `cancellation_reason` (required, min:3) - Причина отмены
+- **Действие**: 
+  - Устанавливает статус `cancelled`
+  - Сохраняет причину отмены
+- **Проверка**: Запись должна принадлежать текущему врачу
+- **Формат ответа**: JSON
+  ```json
+  {
+    "success": true,
+    "message": "Запись отменена"
+  }
+  ```
+
+---
+
+### Маршруты для администраторов (требуют авторизации и роли admin)
+
+Все маршруты защищены middleware `auth` и проверкой роли администратора.
+
+#### Админ-панель
+```
+GET /admin
+```
+- **Название маршрута**: `adminPanel`
+- **Контроллер**: `AdminController@adminPanel`
+- **Описание**: Главная страница админ-панели с несколькими вкладками
+- **Представление**: `resources/views/admin/panel.blade.php`
+- **Вкладки**:
+  - Записи
+  - Врачи
+  - Пользователи
+  - Специальности
+  - Администраторы
+- **Требования**: 
+  - Авторизация
+  - Роль `admin`
+
+#### Создание специальности
+```
+POST /admin/store/specialty
+```
+- **Название маршрута**: `store.specialty`
+- **Контроллер**: `AdminController@storeSpecialty`
+- **Параметры запроса**:
+  - `specialty` (required) - Название специальности
+- **Действие**: Создает новую специальность
+- **Требования**: Роль `admin`
+- **Результат**: Редирект обратно
+
+#### Создание врача
+```
+POST /admin/store/doctor
+```
+- **Название маршрута**: `store.doctor`
+- **Контроллер**: `AdminController@storeDoctor`
+- **Параметры запроса**:
+  - `name` (required) - Имя врача
+  - `specialty_id` (required) - ID специальности
+  - `pole` (required, unique) - Логин для входа
+  - `password` (required, min:6) - Пароль
+- **Действие**: 
+  - Создает пользователя с ролью `doctor`
+  - Создает запись врача в таблице `doctors`
+  - Связывает врача с пользователем
+- **Требования**: Роль `admin`
+- **Результат**: Редирект обратно с сообщением об успехе и логином
+
+#### Просмотр информации о враче
+```
+GET /admin/doctor/{id}
+```
+- **Название маршрута**: `show.doctor`
+- **Контроллер**: `AdminController@showDoctor`
+- **Параметры URL**: `id` - ID врача
+- **Описание**: Возвращает JSON с информацией о враче (используется для модального окна)
+- **Формат ответа**: JSON
+  ```json
+  {
+    "id": 1,
+    "name": "Иван Иванов",
+    "specialty": "Терапевт",
+    "specialty_id": 1,
+    "user": {
+      "id": 2,
+      "name": "Иван Иванов",
+      "pole": "doctor001"
+    },
+    "created_at": "06.12.2025 14:30"
+  }
+  ```
+- **Требования**: Роль `admin`
+
+#### Удаление врача
+```
+DELETE /admin/doctor/{id}
+```
+- **Название маршрута**: `destroy.doctor`
+- **Контроллер**: `AdminController@destroyDoctor`
+- **Параметры URL**: `id` - ID врача
+- **Действие**: Удаляет врача из базы данных
+- **Требования**: Роль `admin`
+- **Результат**: Редирект обратно с сообщением об успехе
+
+#### Создание администратора
+```
+POST /admin/store/admin
+```
+- **Название маршрута**: `store.admin`
+- **Контроллер**: `AdminController@storeAdmin`
+- **Параметры запроса**:
+  - `name` (required) - Имя администратора
+  - `pole` (required, unique) - Логин для входа
+  - `password` (required, min:6) - Пароль
+- **Действие**: Создает нового пользователя с ролью `admin`
+- **Требования**: Роль `admin`
+- **Результат**: Редирект обратно с сообщением об успехе и логином
+
+---
+
+## 🎮 Контроллеры
+
+### AuthController
+Обрабатывает аутентификацию пользователей.
+
+**Методы:**
+- `register(Request $request)` - Регистрация нового пользователя
+- `login(Request $request)` - Вход в систему
+- `logout(Request $request)` - Выход из системы
+
+**Локация**: `app/Http/Controllers/AuthController.php`
+
+---
+
+### AppointmentController
+Обрабатывает операции, связанные с записями на прием (клиентская часть).
+
+**Методы:**
+- `index()` - Отображает список всех врачей
+- `show(Doctor $doctor)` - Отображает страницу записи к врачу
+- `checkAvailability(Request $request)` - Проверяет доступные временные слоты (AJAX)
+- `store(Request $request)` - Создает новую запись на прием
+- `myAppointments()` - Отображает записи текущего пользователя
+
+**Локация**: `app/Http/Controllers/AppointmentController.php`
+
+---
+
+### DoctorAppointmentController
+Обрабатывает операции врачей с записями.
+
+**Методы:**
+- `index()` - Панель врача со списком записей
+- `updateStatus(Request $request, $appointment)` - Изменяет статус записи
+- `completeAppointment(Request $request, $appointment)` - Завершает прием с заключением
+- `cancelAppointment(Request $request, $appointment)` - Отменяет запись (AJAX)
+
+**Защита**: Все методы проверяют, что пользователь является врачом и имеет профиль врача.
+
+**Локация**: `app/Http/Controllers/DoctorAppointmentController.php`
+
+---
+
+### AdminController
+Обрабатывает операции администратора.
+
+**Методы:**
+- `adminPanel()` - Главная страница админ-панели
+- `storeSpecialty(Request $request)` - Создает специальность
+- `storeDoctor(Request $request)` - Создает врача с учетной записью
+- `showDoctor($id)` - Возвращает информацию о враче (JSON)
+- `destroyDoctor($id)` - Удаляет врача
+- `storeAdmin(Request $request)` - Создает нового администратора
+
+**Защита**: Все методы проверяют, что пользователь является администратором.
+
+**Локация**: `app/Http/Controllers/AdminController.php`
+
+---
+
+## 📦 Модели
+
+### User
+**Путь**: `app/Models/User.php`
+
+**Поля:**
+- `name` - Имя пользователя
+- `role` - Роль (patient, doctor, admin)
+- `pole` - Уникальный логин
+- `password` - Хешированный пароль
+
+**Отношения:**
+- `hasMany(Appointment::class)` - appointments()
+- `belongsTo(Doctor::class, 'doctor_id')` - assignedDoctor()
+- `hasOne(Doctor::class, 'user_id')` - doctor()
+
+**Методы:**
+- `isDoctor()` - Проверка роли врача
+- `isAdmin()` - Проверка роли администратора
+
+---
+
+### Doctor
+**Путь**: `app/Models/Doctor.php`
+
+**Поля:**
+- `name` - Имя врача
+- `specialty_id` - ID специальности
+- `user_id` - ID связанного пользователя
+
+**Отношения:**
+- `belongsTo(User::class, 'user_id')` - user()
+- `belongsTo(Specialty::class, 'specialty_id')` - specialty()
+- `hasMany(Appointment::class)` - appointments()
+
+---
+
+### Appointment
+**Путь**: `app/Models/Appointment.php`
+
+**Поля:**
+- `user_id` - ID пациента
+- `doctor_id` - ID врача
+- `appointment_date` - Дата приема
+- `appointment_time` - Время приема
+- `status` - Статус записи
+- `notes` - Примечания пациента
+- `cancellation_reason` - Причина отмены
+- `conclusion` - Заключение врача
+
+**Отношения:**
+- `belongsTo(User::class)` - user()
+- `belongsTo(Doctor::class)` - doctor()
+
+---
+
+### Specialty
+**Путь**: `app/Models/Specialty.php`
+
+**Поля:**
+- `name` - Название специальности
+
+**Отношения:**
+- `hasMany(Doctor::class, 'specialty_id')` - doctors()
+
+---
+
+## 🔒 Система безопасности
+
+### Проверка прав доступа
+
+1. **Панель врача**: Проверяется роль `doctor` и наличие профиля врача
+2. **Админ-панель**: Проверяется роль `admin` во всех методах
+3. **Создание записей**: Требуется авторизация (любая роль)
+
+### Защита от двойных записей
+
+- Уникальный индекс в таблице `appointments` на комбинацию `(doctor_id, appointment_date, appointment_time)`
+- Дополнительная проверка перед созданием записи
+
+---
+
+## 🎨 Представления (Views)
+
+### Структура папок
+```
+resources/views/
+├── admin/
+│   └── panel.blade.php          # Админ-панель
+├── appointments/
+│   ├── index.blade.php          # Список врачей
+│   ├── show.blade.php           # Запись к врачу
+│   └── my.blade.php             # Мои записи
+├── doctor/
+│   ├── appointments/
+│   │   └── index.blade.php      # Панель врача (записи)
+│   └── schedule/
+│       └── index.blade.php      # Управление расписанием врача
+├── auth/
+│   └── animated_background.blade.php
+├── auth_form.blade.php          # Страница авторизации
+├── loyaut.blade.php             # Основной layout
+└── main.blade.php               # Главная страница
+```
+
+---
+
+## ⚙️ Функциональность
+
+### Для пациентов
+1. ✅ Просмотр списка всех врачей с их специальностями
+2. ✅ Выбор даты и времени для записи
+3. ✅ Автоматическая проверка доступности времени
+4. ✅ Создание записи на прием (требуется авторизация)
+5. ✅ Просмотр своих записей со статусами
+6. ✅ Просмотр заключений врачей
+7. ✅ Просмотр причин отмены записей
+
+### Для врачей
+1. ✅ Просмотр всех своих записей, сгруппированных по датам
+2. ✅ Изменение статуса записи (пациент пришел/не пришел)
+3. ✅ Завершение приема с добавлением служебного заключения
+4. ✅ Отмена записи с обязательным указанием причины (модальное окно)
+5. ✅ Просмотр информации о пациенте
+6. ✅ Доступ только к своим записям
+7. ✅ **Управление расписанием:**
+   - Создание слотов в расписании на конкретные даты и время
+   - Блокировка/разблокировка слотов
+   - Удаление слотов из расписания
+   - Просмотр всех созданных слотов
+
+### Для администраторов
+1. ✅ Просмотр всех пользователей системы
+2. ✅ Управление специальностями (создание, удаление)
+3. ✅ Управление врачами:
+   - Создание врача с автоматическим созданием учетной записи
+   - Указание номера кабинета и статуса активности
+   - Просмотр информации о враче
+   - Удаление врача
+4. ✅ Управление администраторами (создание новых)
+5. ✅ Просмотр всех врачей с информацией об учетных записях
+6. ✅ Просмотр всех записей в системе
+7. ✅ Просмотр и удаление пользователей
+6. ✅ Просмотр всех записей в системе
+7. ✅ Просмотр и удаление пользователей
+
+---
+
+## 🔑 Создание администратора
+
+### Способ 1: Создать нового администратора (рекомендуется)
+
+Используйте команду Artisan для создания нового администратора:
+
+```bash
+php artisan admin:create
+```
+
+Команда запросит:
+- Имя администратора
+- Логин (pole) 
+- Пароль (минимум 6 символов)
+
+Или укажите все параметры сразу:
+
+```bash
+php artisan admin:create --name="Администратор" --pole="admin" --password="ваш_пароль"
+```
+
+### Способ 2: Изменить роль существующего пользователя
+
+Если у вас уже есть пользователь, вы можете изменить его роль на администратора:
+
+```bash
+php artisan user:set-role {логин} admin
+```
+
+Например:
+```bash
+php artisan user:set-role admin123 admin
+```
+
+### Способ 3: Через базу данных
+
+Если команды Artisan недоступны, можно создать администратора напрямую через SQL:
+
+```sql
+-- Обновить существующего пользователя
+UPDATE users SET role = 'admin' WHERE pole = 'ваш_логин';
+
+-- Или создать нового (нужно будет сгенерировать хеш пароля)
+INSERT INTO users (name, pole, password, role, created_at, updated_at)
+VALUES ('Администратор', 'admin', '$2y$12$...', 'admin', NOW(), NOW());
+```
+
+> **Важно:** После создания администратора через SQL, необходимо сгенерировать хеш пароля. Используйте команду `php artisan tinker` и выполните: `Hash::make('ваш_пароль')`
+
+### Просмотр всех пользователей
+
+Чтобы посмотреть список всех пользователей и их роли:
+
+```bash
+php artisan user:list
+```
+
+После создания администратора вы сможете создавать других администраторов через админ-панель.
+
+---
+
+## 🛠️ Команды Artisan
+
+### Системные команды
+
+```bash
+# Очистка кеша маршрутов
+php artisan route:clear
+
+# Очистка всего кеша
+php artisan optimize:clear
+
+# Список всех маршрутов
+php artisan route:list
+
+# Выполнение миграций
+php artisan migrate
+
+# Откат миграций
+php artisan migrate:rollback
+
+# Статус миграций
+php artisan migrate:status
+```
+
+### Команды управления пользователями
+
+```bash
+# Создать нового администратора
+php artisan admin:create
+
+# Изменить роль пользователя
+php artisan user:set-role {логин} {роль}
+# Роли: patient, doctor, admin
+
+# Показать список всех пользователей
+php artisan user:list
+```
+
+---
+
+## 📱 Временные слоты
+
+### Автоматическая генерация (по умолчанию)
+Если врач не создал собственное расписание, система генерирует временные слоты автоматически:
+- **Время работы**: 9:00 - 17:00
+- **Интервал**: 30 минут
+- **Доступные слоты**: 09:00, 09:30, 10:00, 10:30, ..., 16:30
+
+### Управление расписанием врача
+Врач может создавать собственное расписание через панель управления расписанием:
+- Создание слотов на конкретные даты с указанием времени начала и окончания
+- Блокировка слотов (например, для отпуска или личных дел)
+- Удаление слотов
+- Система автоматически генерирует 30-минутные интервалы в пределах заданного времени
+
+**Приоритет:** Если у врача есть расписание на дату, используется оно. Иначе - автоматическая генерация.
+
+Занятые слоты автоматически исключаются из списка доступных.
+
+---
+
+## 🔐 Авторизация
+
+Система использует стандартную авторизацию Laravel:
+- Сессии для хранения состояния авторизации
+- Пароли хешируются с помощью bcrypt
+- Middleware `auth` защищает маршруты, требующие авторизации
+- Дополнительная проверка ролей в контроллерах
+
+---
+
+## 📝 Примечания
+
+1. **Поле `pole`** используется как уникальный логин вместо email
+2. **Роль по умолчанию** для новых пользователей - `patient`
+3. **При создании врача** автоматически создается пользователь с ролью `doctor`
+4. **Уникальный индекс** предотвращает двойные записи на одно время
+5. **Маршруты врачей** должны быть объявлены перед маршрутом `/doctor/{doctor}` для избежания конфликтов
+6. **Новые поля пользователей** (email, phone, birth_date, ФИО) опциональны для обратной совместимости
+7. **Номер кабинета** и **статус активности** врача можно указать при создании или оставить пустыми
+8. **Расписание врача** имеет приоритет над автоматической генерацией слотов
+9. **Пациенты видят только активных врачей** (где `is_active = true`)
+10. **При регистрации** обязательны только имя (firstname) и полюс, остальные поля опциональны
+
+---
+
+## 🐛 Известные ограничения
+
+1. Отсутствует функционал редактирования записей
+2. Отсутствует функционал удаления записей пользователями (только отмена)
+3. Отсутствует система уведомлений
+4. Временные слоты по умолчанию жестко заданы (9:00-17:00, интервал 30 минут), но врачи могут создавать собственное расписание
+
+---
+
+## 📄 Лицензия
+
+MIT License
+
+---
+
+## 👨‍💻 Разработка
+
+Для запуска в режиме разработки:
+```bash
+php artisan serve
+npm run dev
+```
+
+Для сборки фронтенда:
+```bash
+npm run build
+```
