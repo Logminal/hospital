@@ -858,8 +858,3 @@ php artisan user:list
 php artisan serve
 npm run dev
 ```
-
-Для сборки фронтенда:
-```bash
-npm run build
-```
