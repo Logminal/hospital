@@ -53,8 +53,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post("/admin/store/specialty", [AdminController::class, 'storeSpecialty'])->name('store.specialty');
     Route::post("/admin/store/doctor", [AdminController::class, 'storeDoctor'])->name('store.doctor');
     Route::post("/admin/store/admin", [AdminController::class, 'storeAdmin'])->name('store.admin');
-    Route::get("/admin/doctor/{id}", [AdminController::class, 'showDoctor'])->name('show.doctor');
-    Route::delete("/admin/doctor/{id}", [AdminController::class, 'destroyDoctor'])->name('destroy.doctor');
+    Route::get("/admin/doctor/{id}", [AdminController::class, 'showDoctor'])->name('show.doctor')->where('id', '[0-9]+');
+    Route::put("/admin/doctor/{id}", [AdminController::class, 'updateDoctor'])->name('update.doctor')->where('id', '[0-9]+');
+    Route::delete("/admin/doctor/{id}", [AdminController::class, 'destroyDoctor'])->name('destroy.doctor')->where('id', '[0-9]+');
     Route::get("/admin/user/{id}", [AdminController::class, 'showUser'])->name('show.user');
     Route::delete("/admin/user/{id}", [AdminController::class, 'destroyUser'])->name('destroy.user');
     Route::delete("/admin/specialty/{id}", [AdminController::class, 'destroySpecialty'])->name('destroy.specialty');

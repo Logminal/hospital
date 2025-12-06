@@ -126,9 +126,25 @@
 
                         <form action="{{route('store.doctor')}}" method="post" class="mb-4">
                             @csrf
+                            <h6>Основная информация:</h6>
                             <div class="mb-3">
-                                <label for="doctor_name" class="form-label">Имя врача:</label>
+                                <label for="doctor_name" class="form-label">Имя врача (полное):</label>
                                 <input type="text" name="name" id="doctor_name" class="form-control" required>
+                                <small class="text-muted">Или заполните ФИО ниже</small>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="doctor_surname" class="form-label">Фамилия:</label>
+                                    <input type="text" name="surname" id="doctor_surname" class="form-control">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="doctor_firstname" class="form-label">Имя:</label>
+                                    <input type="text" name="firstname" id="doctor_firstname" class="form-control">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="doctor_patronymic" class="form-label">Отчество:</label>
+                                    <input type="text" name="patronymic" id="doctor_patronymic" class="form-control">
+                                </div>
                             </div>
                             <div class="mb-3">
                                 <label for="doctor_specialty" class="form-label">Специальность:</label>
@@ -147,6 +163,23 @@
                             <div class="mb-3 form-check">
                                 <input type="checkbox" name="is_active" id="doctor_active" class="form-check-input" value="1" checked>
                                 <label for="doctor_active" class="form-check-label">Врач активен (работает)</label>
+                            </div>
+                            <hr>
+                            <h6>Контактная информация:</h6>
+                            <div class="mb-3">
+                                <label for="doctor_email" class="form-label">Email:</label>
+                                <input type="email" name="email" id="doctor_email" class="form-control">
+                                <small class="text-muted">Необязательно</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="doctor_phone" class="form-label">Телефон:</label>
+                                <input type="text" name="phone" id="doctor_phone" class="form-control" placeholder="+7 (999) 123-45-67">
+                                <small class="text-muted">Необязательно</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="doctor_birth_date" class="form-label">Дата рождения:</label>
+                                <input type="date" name="birth_date" id="doctor_birth_date" class="form-control">
+                                <small class="text-muted">Необязательно</small>
                             </div>
                             <hr>
                             <h6>Учетная запись для входа:</h6>
@@ -202,6 +235,7 @@
                                     </td>
                                     <td>
                                         <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#doctorModal" onclick="viewDoctor({{$doctor->id}})">Просмотреть</button>
+                                        <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editDoctorModal" onclick="editDoctor({{$doctor->id}})">Редактировать</button>
                                         <form action="{{route('destroy.doctor', $doctor->id)}}" method="POST" style="display: inline-block;" onsubmit="return confirm('Вы уверены, что хотите удалить этого врача?');">
                                             @csrf
                                             @method('DELETE')
@@ -416,14 +450,66 @@
         </div>
     </div>
 
+    <!-- Модальное окно для редактирования врача -->
+    <div class="modal fade" id="editDoctorModal" tabindex="-1" aria-labelledby="editDoctorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editDoctorModalLabel">Редактировать врача</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="editDoctorForm" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-body" id="editDoctorModalBody">
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Загрузка...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         function viewDoctor(id) {
             const modalBody = document.getElementById('doctorModalBody');
             modalBody.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Загрузка...</span></div></div>';
 
-            fetch(`/admin/doctor/${id}`)
-                .then(response => response.json())
+            const url = `{{ route('show.doctor', ':id') }}`.replace(':id', id);
+            fetch(url, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(async response => {
+                    const contentType = response.headers.get("content-type");
+                    if (!response.ok) {
+                        if (contentType && contentType.includes("application/json")) {
+                            const err = await response.json();
+                            throw new Error(err.message || err.error || 'Ошибка сервера');
+                        } else {
+                            const text = await response.text();
+                            throw new Error('Ошибка сервера: ' + response.status + ' ' + response.statusText);
+                        }
+                    }
+                    if (contentType && contentType.includes("application/json")) {
+                        return response.json();
+                    } else {
+                        throw new Error('Неверный формат ответа от сервера');
+                    }
+                })
                 .then(data => {
+                    if (data.error) {
+                        throw new Error(data.message || data.error);
+                    }
                     modalBody.innerHTML = `
                         <div class="mb-3">
                             <strong>ID:</strong> ${data.id}
@@ -447,16 +533,25 @@
                             <hr>
                             <h6>Привязанный пользователь:</h6>
                             <div class="mb-2">
-                                <strong>Имя:</strong> ${data.user.name}
+                                <strong>Имя:</strong> ${data.user.name || (data.user.firstname || '') + ' ' + (data.user.surname || '')}
                             </div>
+                            ${data.user.surname || data.user.firstname || data.user.patronymic ? `
+                                <div class="mb-2">
+                                    <strong>ФИО:</strong> ${[data.user.surname, data.user.firstname, data.user.patronymic].filter(x => x).join(' ') || 'Не указано'}
+                                </div>
+                            ` : ''}
                             <div class="mb-2">
                                 <strong>Полюс:</strong> ${data.user.pole}
                             </div>
+                            ${data.user.email ? `<div class="mb-2"><strong>Email:</strong> ${data.user.email}</div>` : ''}
+                            ${data.user.phone ? `<div class="mb-2"><strong>Телефон:</strong> ${data.user.phone}</div>` : ''}
+                            ${data.user.birth_date ? `<div class="mb-2"><strong>Дата рождения:</strong> ${data.user.birth_date}</div>` : ''}
                         ` : '<div class="mb-3"><em>Пользователь не привязан</em></div>'}
                     `;
                 })
                 .catch(error => {
-                    modalBody.innerHTML = '<div class="alert alert-danger">Ошибка при загрузке данных о враче</div>';
+                    console.error('Error loading doctor:', error);
+                    modalBody.innerHTML = '<div class="alert alert-danger">Ошибка при загрузке данных о враче: ' + (error.message || 'Неизвестная ошибка') + '</div>';
                 });
         }
 
@@ -481,11 +576,19 @@
                             <strong>ID:</strong> ${data.id}
                         </div>
                         <div class="mb-3">
-                            <strong>Имя:</strong> ${data.name}
+                            <strong>Имя:</strong> ${data.name || (data.firstname || '') + ' ' + (data.surname || '')}
                         </div>
+                        ${data.surname || data.firstname || data.patronymic ? `
+                            <div class="mb-3">
+                                <strong>ФИО:</strong> ${[data.surname, data.firstname, data.patronymic].filter(x => x).join(' ') || 'Не указано'}
+                            </div>
+                        ` : ''}
                         <div class="mb-3">
                             <strong>Полюс (логин):</strong> ${data.pole}
                         </div>
+                        ${data.email ? `<div class="mb-3"><strong>Email:</strong> ${data.email}</div>` : ''}
+                        ${data.phone ? `<div class="mb-3"><strong>Телефон:</strong> ${data.phone}</div>` : ''}
+                        ${data.birth_date ? `<div class="mb-3"><strong>Дата рождения:</strong> ${data.birth_date}</div>` : ''}
                         <div class="mb-3">
                             <strong>Роль:</strong> ${roleBadge}
                         </div>
@@ -493,7 +596,7 @@
                             <strong>Дата регистрации:</strong> ${data.created_at}
                         </div>
                         <div class="mb-3">
-                            <strong>Количество записей:</strong> ${data.appointments_count}
+                            <strong>Количество записей:</strong> ${data.appointments_count || 0}
                         </div>
                         ${data.doctor ? `
                             <hr>
@@ -508,7 +611,119 @@
                     `;
                 })
                 .catch(error => {
-                    modalBody.innerHTML = '<div class="alert alert-danger">Ошибка при загрузке данных о пользователе</div>';
+                    console.error('Error:', error);
+                    modalBody.innerHTML = '<div class="alert alert-danger">Ошибка при загрузке данных о пользователе: ' + (error.message || 'Неизвестная ошибка') + '</div>';
+                });
+        }
+
+        function editDoctor(id) {
+            const modalBody = document.getElementById('editDoctorModalBody');
+            modalBody.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Загрузка...</span></div></div>';
+
+            const url = `{{ route('show.doctor', ':id') }}`.replace(':id', id);
+            fetch(url, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(async response => {
+                    const contentType = response.headers.get("content-type");
+                    if (!response.ok) {
+                        if (contentType && contentType.includes("application/json")) {
+                            const err = await response.json();
+                            throw new Error(err.message || err.error || 'Ошибка сервера');
+                        } else {
+                            const text = await response.text();
+                            throw new Error('Ошибка сервера: ' + response.status + ' ' + response.statusText);
+                        }
+                    }
+                    if (contentType && contentType.includes("application/json")) {
+                        return response.json();
+                    } else {
+                        throw new Error('Неверный формат ответа от сервера');
+                    }
+                })
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.message || data.error);
+                    }
+                    const specialties = @json($all_specialty);
+                    let specialtiesOptions = '<option value="">Выберите специальность</option>';
+                    specialties.forEach(spec => {
+                        const selected = spec.id == data.specialty_id ? 'selected' : '';
+                        specialtiesOptions += `<option value="${spec.id}" ${selected}>${spec.name}</option>`;
+                    });
+
+                    modalBody.innerHTML = `
+                        <input type="hidden" name="doctor_id" value="${data.id}">
+                        <h6>Основная информация:</h6>
+                        <div class="mb-3">
+                            <label for="edit_doctor_name" class="form-label">Имя врача (полное):</label>
+                            <input type="text" name="name" id="edit_doctor_name" class="form-control" value="${data.name || ''}" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="edit_doctor_surname" class="form-label">Фамилия:</label>
+                                <input type="text" name="surname" id="edit_doctor_surname" class="form-control" value="${data.user?.surname || ''}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="edit_doctor_firstname" class="form-label">Имя:</label>
+                                <input type="text" name="firstname" id="edit_doctor_firstname" class="form-control" value="${data.user?.firstname || ''}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="edit_doctor_patronymic" class="form-label">Отчество:</label>
+                                <input type="text" name="patronymic" id="edit_doctor_patronymic" class="form-control" value="${data.user?.patronymic || ''}">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_doctor_specialty" class="form-label">Специальность:</label>
+                            <select name="specialty_id" id="edit_doctor_specialty" class="form-select" required>
+                                ${specialtiesOptions}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_doctor_cabinet" class="form-label">Номер кабинета:</label>
+                            <input type="text" name="cabinet_number" id="edit_doctor_cabinet" class="form-control" value="${data.cabinet_number || ''}">
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" name="is_active" id="edit_doctor_active" class="form-check-input" value="1" ${data.is_active ? 'checked' : ''}>
+                            <label for="edit_doctor_active" class="form-check-label">Врач активен (работает)</label>
+                        </div>
+                        <hr>
+                        <h6>Контактная информация:</h6>
+                        <div class="mb-3">
+                            <label for="edit_doctor_email" class="form-label">Email:</label>
+                            <input type="email" name="email" id="edit_doctor_email" class="form-control" value="${data.user?.email || ''}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_doctor_phone" class="form-label">Телефон:</label>
+                            <input type="text" name="phone" id="edit_doctor_phone" class="form-control" value="${data.user?.phone || ''}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_doctor_birth_date" class="form-label">Дата рождения:</label>
+                            <input type="date" name="birth_date" id="edit_doctor_birth_date" class="form-control" value="${data.user?.birth_date || ''}">
+                        </div>
+                        <hr>
+                        <h6>Учетная запись:</h6>
+                        <div class="mb-3">
+                            <label for="edit_doctor_pole" class="form-label">Полюс (логин):</label>
+                            <input type="text" name="pole" id="edit_doctor_pole" class="form-control" value="${data.user?.pole || ''}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_doctor_password" class="form-label">Новый пароль:</label>
+                            <input type="password" name="password" id="edit_doctor_password" class="form-control" minlength="6">
+                            <small class="text-muted">Оставьте пустым, если не хотите менять пароль</small>
+                        </div>
+                    `;
+
+                    // Устанавливаем action формы
+                    const updateUrl = `{{ route('update.doctor', ':id') }}`.replace(':id', id);
+                    document.getElementById('editDoctorForm').action = updateUrl;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    modalBody.innerHTML = '<div class="alert alert-danger">Ошибка при загрузке данных о враче: ' + (error.message || 'Неизвестная ошибка') + '</div>';
                 });
         }
     </script>

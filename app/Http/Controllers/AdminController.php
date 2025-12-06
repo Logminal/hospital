@@ -75,19 +75,44 @@ class AdminController extends Controller
             'password' => 'required|string|min:6',
             'cabinet_number' => 'nullable|string|max:50',
             'is_active' => 'nullable|boolean',
+            'surname' => 'nullable|string|max:255',
+            'firstname' => 'nullable|string|max:255',
+            'patronymic' => 'nullable|string|max:255',
+            'email' => 'nullable|email|unique:users,email',
+            'phone' => 'nullable|string|max:20',
+            'birth_date' => 'nullable|date',
         ]);
+
+        // Формируем имя для поля name (для обратной совместимости)
+        $fullName = $request['name'];
+        if ($request->filled('firstname') || $request->filled('surname')) {
+            $nameParts = array_filter([
+                $request['surname'],
+                $request['firstname'],
+                $request['patronymic']
+            ]);
+            if (!empty($nameParts)) {
+                $fullName = implode(' ', $nameParts);
+            }
+        }
 
         // Создаем пользователя с ролью врач
         $user = User::create([
-            'name' => $request['name'],
+            'name' => $fullName,
+            'surname' => $request['surname'] ?? null,
+            'firstname' => $request['firstname'] ?? null,
+            'patronymic' => $request['patronymic'] ?? null,
             'pole' => $request['pole'],
+            'email' => $request['email'] ?? null,
+            'phone' => $request['phone'] ?? null,
+            'birth_date' => $request['birth_date'] ?? null,
             'password' => bcrypt($request['password']),
             'role' => 'doctor',
         ]);
 
         // Создаем врача и привязываем к пользователю
         Doctor::create([
-            'name' => $request['name'],
+            'name' => $fullName,
             'specialty_id' => $request['specialty_id'],
             'user_id' => $user->id,
             'cabinet_number' => $request['cabinet_number'] ?? null,
@@ -97,6 +122,75 @@ class AdminController extends Controller
         return redirect()->back()->with('success', 'Врач успешно добавлен! Логин: ' . $request['pole']);
     }
 
+    public function updateDoctor(Request $request, $id)
+    {
+        // Проверяем права доступа
+        if (!Auth::check() || !Auth::user()->isAdmin()) {
+            abort(403, 'Доступ запрещен. Только для администраторов.');
+        }
+
+        $doctor = Doctor::with('user')->findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'specialty_id' => 'required|exists:specialties,id',
+            'pole' => 'required|string|unique:users,pole,' . ($doctor->user ? $doctor->user->id : 'NULL') . ',id',
+            'password' => 'nullable|string|min:6',
+            'cabinet_number' => 'nullable|string|max:50',
+            'is_active' => 'nullable|boolean',
+            'surname' => 'nullable|string|max:255',
+            'firstname' => 'nullable|string|max:255',
+            'patronymic' => 'nullable|string|max:255',
+            'email' => 'nullable|email|unique:users,email,' . ($doctor->user ? $doctor->user->id : 'NULL') . ',id',
+            'phone' => 'nullable|string|max:20',
+            'birth_date' => 'nullable|date',
+        ]);
+
+        // Формируем имя для поля name (для обратной совместимости)
+        $fullName = $request['name'];
+        if ($request->filled('firstname') || $request->filled('surname')) {
+            $nameParts = array_filter([
+                $request['surname'],
+                $request['firstname'],
+                $request['patronymic']
+            ]);
+            if (!empty($nameParts)) {
+                $fullName = implode(' ', $nameParts);
+            }
+        }
+
+        // Обновляем врача
+        $doctor->update([
+            'name' => $fullName,
+            'specialty_id' => $request['specialty_id'],
+            'cabinet_number' => $request['cabinet_number'] ?? null,
+            'is_active' => $request->has('is_active') ? (bool)$request['is_active'] : true,
+        ]);
+
+        // Обновляем пользователя
+        if ($doctor->user) {
+            $userData = [
+                'name' => $fullName,
+                'surname' => $request['surname'] ?? null,
+                'firstname' => $request['firstname'] ?? null,
+                'patronymic' => $request['patronymic'] ?? null,
+                'pole' => $request['pole'],
+                'email' => $request['email'] ?? null,
+                'phone' => $request['phone'] ?? null,
+                'birth_date' => $request['birth_date'] ?? null,
+            ];
+
+            // Обновляем пароль только если он указан
+            if ($request->filled('password')) {
+                $userData['password'] = bcrypt($request['password']);
+            }
+
+            $doctor->user->update($userData);
+        }
+
+        return redirect()->back()->with('success', 'Данные врача успешно обновлены!');
+    }
+
     public function showDoctor($id)
     {
         // Проверяем права доступа
@@ -104,22 +198,35 @@ class AdminController extends Controller
             abort(403, 'Доступ запрещен. Только для администраторов.');
         }
 
-        $doctor = Doctor::with(['specialty', 'user'])->findOrFail($id);
-        
-        return response()->json([
-            'id' => $doctor->id,
-            'name' => $doctor->name,
-            'specialty' => $doctor->specialty->name ?? 'Не указана',
-            'specialty_id' => $doctor->specialty_id,
-            'cabinet_number' => $doctor->cabinet_number,
-            'is_active' => $doctor->is_active,
-            'user' => $doctor->user ? [
-                'id' => $doctor->user->id,
-                'name' => $doctor->user->name,
-                'pole' => $doctor->user->pole,
-            ] : null,
-            'created_at' => $doctor->created_at->format('d.m.Y H:i'),
-        ]);
+        try {
+            $doctor = Doctor::with(['specialty', 'user'])->findOrFail($id);
+            
+            return response()->json([
+                'id' => $doctor->id,
+                'name' => $doctor->name ?? '',
+                'specialty' => $doctor->specialty ? ($doctor->specialty->name ?? 'Не указана') : 'Не указана',
+                'specialty_id' => $doctor->specialty_id,
+                'cabinet_number' => $doctor->cabinet_number ?? null,
+                'is_active' => $doctor->is_active ?? true,
+                'user' => $doctor->user ? [
+                    'id' => $doctor->user->id,
+                    'name' => $doctor->user->name ?? '',
+                    'surname' => $doctor->user->surname ?? null,
+                    'firstname' => $doctor->user->firstname ?? null,
+                    'patronymic' => $doctor->user->patronymic ?? null,
+                    'pole' => $doctor->user->pole ?? '',
+                    'email' => $doctor->user->email ?? null,
+                    'phone' => $doctor->user->phone ?? null,
+                    'birth_date' => $doctor->user->birth_date ? $doctor->user->birth_date->format('Y-m-d') : null,
+                ] : null,
+                'created_at' => $doctor->created_at ? $doctor->created_at->format('d.m.Y H:i') : '',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Ошибка при загрузке данных о враче',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function destroyDoctor($id)
@@ -166,21 +273,34 @@ class AdminController extends Controller
             abort(403, 'Доступ запрещен. Только для администраторов.');
         }
 
-        $user = User::with(['appointments.doctor', 'doctor'])->findOrFail($id);
-        
-        return response()->json([
-            'id' => $user->id,
-            'name' => $user->name,
-            'pole' => $user->pole,
-            'role' => $user->role,
-            'created_at' => $user->created_at->format('d.m.Y H:i'),
-            'appointments_count' => $user->appointments->count(),
-            'doctor' => $user->doctor ? [
-                'id' => $user->doctor->id,
-                'name' => $user->doctor->name,
-                'specialty' => $user->doctor->specialty->name ?? 'Не указана',
-            ] : null,
-        ]);
+        try {
+            $user = User::with(['appointments.doctor', 'doctor.specialty'])->findOrFail($id);
+            
+            return response()->json([
+                'id' => $user->id,
+                'name' => $user->name ?? ($user->firstname . ' ' . ($user->surname ?? '')),
+                'surname' => $user->surname ?? null,
+                'firstname' => $user->firstname ?? null,
+                'patronymic' => $user->patronymic ?? null,
+                'pole' => $user->pole,
+                'email' => $user->email ?? null,
+                'phone' => $user->phone ?? null,
+                'birth_date' => $user->birth_date ? $user->birth_date->format('d.m.Y') : null,
+                'role' => $user->role,
+                'created_at' => $user->created_at->format('d.m.Y H:i'),
+                'appointments_count' => $user->appointments ? $user->appointments->count() : 0,
+                'doctor' => $user->doctor ? [
+                    'id' => $user->doctor->id,
+                    'name' => $user->doctor->name,
+                    'specialty' => $user->doctor->specialty ? $user->doctor->specialty->name : 'Не указана',
+                ] : null,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Ошибка при загрузке данных пользователя',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function destroyUser($id)
