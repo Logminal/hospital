@@ -15,26 +15,26 @@ class AppointmentController extends Controller
     public function index(Request $request)
     {
         $specialties = Specialty::all();
-        
+
         // Получаем фильтр по специальности из запроса
         $specialtyFilter = $request->input('specialty');
         $searchQuery = $request->input('search');
-        
+
         // Базовый запрос врачей - только активные
         $doctorsQuery = Doctor::with('specialty')->where('is_active', true);
-        
+
         // Применяем фильтр по специальности, если указан
         if ($specialtyFilter && $specialtyFilter !== 'all') {
             $doctorsQuery->where('specialty_id', $specialtyFilter);
         }
-        
+
         // Применяем поиск по имени, если указан
         if ($searchQuery) {
             $doctorsQuery->where('name', 'like', '%' . $searchQuery . '%');
         }
-        
+
         $doctors = $doctorsQuery->get();
-        
+
         return view('appointments.index', [
             'specialties' => $specialties,
             'doctors' => $doctors,
@@ -46,7 +46,7 @@ class AppointmentController extends Controller
     public function show(Doctor $doctor)
     {
         $doctor->load('specialty');
-        
+
         return view('appointments.show', [
             'doctor' => $doctor,
         ]);
@@ -108,7 +108,7 @@ class AppointmentController extends Controller
                 foreach ($schedules as $schedule) {
                     $start = strtotime($schedule->start_time);
                     $end = strtotime($schedule->end_time);
-                    
+
                     // Генерируем слоты каждые 30 минут в пределах расписания
                     $current = $start;
                     while ($current < $end) {
@@ -121,21 +121,24 @@ class AppointmentController extends Controller
                     }
                 }
             } else {
-                // Если расписание не задано, используем динамическую генерацию (обратная совместимость)
-                $startHour = 9;
-                $endHour = 17;
-                $slotDuration = 30; // минут
-
-                for ($hour = $startHour; $hour < $endHour; $hour++) {
-                    for ($minute = 0; $minute < 60; $minute += $slotDuration) {
-                        $timeSlot = sprintf('%02d:%02d', $hour, $minute);
-                        if (!in_array($timeSlot, $bookedTimes)) {
-                            $availableSlots[] = $timeSlot;
-                        }
-                    }
-                }
+                return response()->json([
+                    'error' => 'Врач в этот день не работет.',
+//                    'message' => $e->getMessage(),
+                ], 500);
+//                // Если расписание не задано, используем динамическую генерацию (обратная совместимость)
+//                $startHour = 9;
+//                $endHour = 17;
+//                $slotDuration = 30; // минут
+//
+//                for ($hour = $startHour; $hour < $endHour; $hour++) {
+//                    for ($minute = 0; $minute < 60; $minute += $slotDuration) {
+//                        $timeSlot = sprintf('%02d:%02d', $hour, $minute);
+//                        if (!in_array($timeSlot, $bookedTimes)) {
+//                            $availableSlots[] = $timeSlot;
+//                        }
+//                    }
+//                }
             }
-            
             // Сортируем слоты
             sort($availableSlots);
 
@@ -179,7 +182,7 @@ class AppointmentController extends Controller
                 ->withInput()
                 ->with('error', 'Это время уже занято. Выберите другое время.');
         }
-        
+
         // Проверяем, что врач активен
         $doctor = Doctor::findOrFail($request->doctor_id);
         if (!$doctor->is_active) {
