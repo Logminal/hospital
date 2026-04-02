@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\DoctorAppointmentController;
 use App\Http\Controllers\DoctorScheduleController;
+use App\Models\Doctor;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
@@ -12,8 +13,35 @@ use Illuminate\Support\Facades\Route;
 // });
 
 Route::get('/', function () {
-    return view('main');
+    $featuredDoctors = Doctor::with('specialty')
+        ->where('is_active', true)
+        ->take(4)
+        ->get();
+
+    return view('main', [
+        'featuredDoctors' => $featuredDoctors,
+    ]);
 })->name("main");
+
+Route::get('/contacts', function () {
+    return view('contacts');
+})->name('contacts');
+
+Route::get('/about', function () {
+    return view('about');
+})->name('about');
+
+Route::get('/services', function () {
+    return view('services');
+})->name('services');
+
+Route::get('/legal', function () {
+    return view('legal');
+})->name('legal');
+
+Route::get('/privacy', function () {
+    return view('privacy');
+})->name('privacy');
 
 Route::get('/auth', function () {
     return view('auth_form');
@@ -38,11 +66,13 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Appointments (Client side)
+Route::get('/doctors/', [AppointmentController::class, 'index']);
 Route::get('/doctors', [AppointmentController::class, 'index'])->name('doctors.index');
 Route::get('/doctor/{doctor}', [AppointmentController::class, 'show'])->name('doctor.show');
 Route::post('/appointments/check-availability', [AppointmentController::class, 'checkAvailability'])->name('appointments.check');
 Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
 Route::get('/my-appointments', [AppointmentController::class, 'myAppointments'])->name('appointments.my');
+Route::get('/profile', [AppointmentController::class, 'profile'])->name('appointments.profile');
 Route::middleware(['auth'])->group(function () {
     Route::post('/appointments/{id}/cancel', [AppointmentController::class, 'cancelAppointment'])->name('appointments.cancel')->where('id', '[0-9]+');
 });
@@ -59,4 +89,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get("/admin/user/{id}", [AdminController::class, 'showUser'])->name('show.user');
     Route::delete("/admin/user/{id}", [AdminController::class, 'destroyUser'])->name('destroy.user');
     Route::delete("/admin/specialty/{id}", [AdminController::class, 'destroySpecialty'])->name('destroy.specialty');
+});
+
+
+
+Route::get('/check-tokens', function () {
+    return [
+        'session_token' => csrf_token(),
+        'cookie_token' => request()->cookie('XSRF-TOKEN'),
+    ];
 });

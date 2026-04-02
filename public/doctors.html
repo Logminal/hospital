@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+
+<html class="light" lang="ru"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Список врачей</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#137fec",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+            },
+            fontFamily: {
+              "display": ["Manrope", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+    </style>
+</head>
+<body class="font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<div class="px-4 sm:px-8 md:px-16 lg:px-24 xl:px-40 flex flex-1 justify-center py-5">
+<div class="layout-content-container flex flex-col w-full max-w-[960px] flex-1">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-700 px-4 sm:px-6 md:px-10 py-3">
+<div class="flex items-center gap-4 text-slate-900 dark:text-slate-50">
+<div class="size-6 text-primary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-slate-900 dark:text-slate-50 text-lg font-bold leading-tight tracking-[-0.015em]">Поликлиника</h2>
+</div>
+<div class="flex flex-1 justify-end gap-8">
+<div class="hidden md:flex items-center gap-9">
+<a class="text-slate-900 dark:text-slate-300 text-sm font-medium leading-normal hover:text-primary dark:hover:text-primary" href="#">Главная</a>
+<a class="text-slate-900 dark:text-slate-300 text-sm font-medium leading-normal hover:text-primary dark:hover:text-primary" href="#">Услуги</a>
+<a class="text-primary text-sm font-bold leading-normal" href="#">Врачи</a>
+<a class="text-slate-900 dark:text-slate-300 text-sm font-medium leading-normal hover:text-primary dark:hover:text-primary" href="#">Контакты</a>
+</div>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90">
+<span class="truncate">Записаться</span>
+</button>
+</div>
+</header>
+<main class="flex flex-col gap-4 mt-8">
+<div class="flex flex-wrap justify-between gap-3 p-4">
+<p class="text-slate-900 dark:text-slate-50 text-4xl font-black leading-tight tracking-[-0.033em] min-w-72">Наши врачи</p>
+</div>
+<div class="px-4 py-3">
+<label class="flex flex-col min-w-40 h-12 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+<div class="text-slate-500 dark:text-slate-400 flex bg-slate-200 dark:bg-slate-800 items-center justify-center pl-4 rounded-l-lg border-r-0">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-slate-50 focus:outline-0 focus:ring-0 border-none bg-slate-200 dark:bg-slate-800 focus:border-none h-full placeholder:text-slate-500 dark:placeholder:text-slate-400 px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" placeholder="Поиск по имени врача..." value=""/>
+</div>
+</label>
+</div>
+<div class="flex gap-3 p-3 overflow-x-auto">
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary/20 text-primary pl-4 pr-2">
+<p class="text-sm font-bold leading-normal">Все специальности</p>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-slate-200 dark:bg-slate-800 pl-4 pr-4 hover:bg-slate-300 dark:hover:bg-slate-700">
+<p class="text-slate-900 dark:text-slate-50 text-sm font-medium leading-normal">Терапевт</p>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-slate-200 dark:bg-slate-800 pl-4 pr-4 hover:bg-slate-300 dark:hover:bg-slate-700">
+<p class="text-slate-900 dark:text-slate-50 text-sm font-medium leading-normal">Кардиолог</p>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-slate-200 dark:bg-slate-800 pl-4 pr-4 hover:bg-slate-300 dark:hover:bg-slate-700">
+<p class="text-slate-900 dark:text-slate-50 text-sm font-medium leading-normal">Хирург</p>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-slate-200 dark:bg-slate-800 pl-4 pr-4 hover:bg-slate-300 dark:hover:bg-slate-700">
+<p class="text-slate-900 dark:text-slate-50 text-sm font-medium leading-normal">Невролог</p>
+</button>
+</div>
+<div class="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4 p-4">
+<div class="flex flex-col gap-3 text-center pb-3 bg-white dark:bg-slate-800/50 rounded-xl p-4 transition-shadow hover:shadow-lg">
+<div class="px-4">
+<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full" data-alt="Photo of Dr. Anna Ivanova" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC8s6XPeFNkK9jIVA6ikO5pAIQZ3VMcUi5hLwnuxyydj7jdtfJIZp1hTlCEAIox5bIxSY_1mVDbNu799hHRLM7Rkn_GZUGyTMx6PhIa8rxEBYTQapxC54PCS6J09QSJQ-EtWgfXxa0GhZPwo8W5BEFVf3Onb41Q5rEtDBrGvS-jab6AErh4x4MML-ihakaablOU8XDoG7-SEf1yHIUwGVtPRncvtFOTuEBd46siiS5LfA-bKcTBMLsVFyyfSYJpAecGt8-sPVVS0YM");'></div>
+</div>
+<div>
+<p class="text-slate-900 dark:text-slate-50 text-base font-bold leading-normal">Д-р Анна Иванова</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal">Кардиолог</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal mt-1">★★★★☆ 4.8</p>
+</div>
+</div>
+<div class="flex flex-col gap-3 text-center pb-3 bg-white dark:bg-slate-800/50 rounded-xl p-4 transition-shadow hover:shadow-lg">
+<div class="px-4">
+<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full" data-alt="Photo of Dr. Petr Smirnov" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBGPNnvZMCVZuOCKjd6g8qWm7RSZm0DzO3lgm3mPpVbi4GuVChWY-T8MTFvWU893nEBmxBXwMEvAl9D08a7RHjQ9TLt3jTbksuoml-I1_Gu6PGB6rZPcmuLrd_SpyvVYNJyIwEu10xn_BiIOdQJuUat3BuGCEJYtoLcA8k5QfcV-4oBJcmxkHRUVfIvhKkvfc8AYRpXOW69LRMzVmaLC5w5clvzs2fsTfKz0PXJDWlPY-Ns_f0cXhj7V082F5ojQLIkEHZ8a2x3B8o");'></div>
+</div>
+<div>
+<p class="text-slate-900 dark:text-slate-50 text-base font-bold leading-normal">Д-р Петр Смирнов</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal">Терапевт</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal mt-1">★★★★★ 5.0</p>
+</div>
+</div>
+<div class="flex flex-col gap-3 text-center pb-3 bg-white dark:bg-slate-800/50 rounded-xl p-4 transition-shadow hover:shadow-lg">
+<div class="px-4">
+<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full" data-alt="Photo of Dr. Elena Vasilyeva" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCKUB1nnq7WnTV_ZqE-OwbJpxBc3hJoPk7tLmhsl9-1U0R4P7yP77b9NNIEL4a-Kq6JFRALwjlHN6kyL0tuP3PDiF4jPMiKfS4wex0f5ArgVoDknNdMGh2cDYw6aqMpNZCrIYcFx7mGPtZOR_HKcVI5cRXLx1U2xiPemH4WSPum3ZDfvNVAs8ZKZRUtB3ERs7trhq_Reh2bZr0UQoYAsTsdytYbIHmB9NXiwXcjb7K2upoTjLuakxS3XSZUraObHTLZQPib-0dGuQY");'></div>
+</div>
+<div>
+<p class="text-slate-900 dark:text-slate-50 text-base font-bold leading-normal">Д-р Елена Васильева</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal">Хирург</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal mt-1">★★★★☆ 4.7</p>
+</div>
+</div>
+<div class="flex flex-col gap-3 text-center pb-3 bg-white dark:bg-slate-800/50 rounded-xl p-4 transition-shadow hover:shadow-lg">
+<div class="px-4">
+<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full" data-alt="Photo of Dr. Ivan Kuznetsov" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCl_zlDJ09YgFgPUEiBuJ6CU-M5Rpk8dkIY3LQGVW2qOmVKIRkzpBi8EXPUiaSCb3kWhqOB9VQHmmM7ttT8spbBhqtYXqk0DCqJ_aRWLVg2Vyxspy-WJD5YJLES9V1peUHSeh8nCdvLaGVyRaqi2VRcCUshfoc9TrBFizhI1qmW_FuG3YWsUnIFU-G9fy7IpEzeD8AVDMy6Ni8JeKM53k2Cs3fhLjo8tk8bLJH0bwbRep_4f-wKIZuRf3yp29hZvSWp6bh6VlCJxeQ");'></div>
+</div>
+<div>
+<p class="text-slate-900 dark:text-slate-50 text-base font-bold leading-normal">Д-р Иван Кузнецов</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal">Невролог</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal mt-1">★★★★☆ 4.9</p>
+</div>
+</div>
+<div class="flex flex-col gap-3 text-center pb-3 bg-white dark:bg-slate-800/50 rounded-xl p-4 transition-shadow hover:shadow-lg">
+<div class="px-4">
+<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full" data-alt="Photo of Dr. Maria Sokolova" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBLMRny_a5USpcgeUwa0mZFSyO3avBRY0w3sEEL_lwv6KUDi5uvQHtse6DOOOy-1Dd9SZULt3HiTcnzK5XHPBUX41iAJSICD4b-nt6tUZzTL0oBrnmma3wOhu6ypKKFRr_10ErKNri6bDaIsP6jncoCyAnSTqwJNAvoNbAskcDS3rYYJuKTaHxHckpxuMrzzN61La8BwXD7dAMDXNVLI09VzIN_57gJGekb6RSWK6DESlqGIu8POy-uDWCSIT9HZSJ5XRLhE_2IQmk");'></div>
+</div>
+<div>
+<p class="text-slate-900 dark:text-slate-50 text-base font-bold leading-normal">Д-р Мария Соколова</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal">Кардиолог</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal mt-1">★★★★★ 4.9</p>
+</div>
+</div>
+<div class="flex flex-col gap-3 text-center pb-3 bg-white dark:bg-slate-800/50 rounded-xl p-4 transition-shadow hover:shadow-lg">
+<div class="px-4">
+<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full" data-alt="Photo of Dr. Alexey Popov" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuALTG4rQKzvf-Ks34h1qaab-YzKcOltg9VjLbEkn4f4NaOkUuy111adp39ZP3a1ZKBYlMGVOTRP6kQWSfFaAtkGDJl-OTSXw9WcMbMbuSABtsvplCs3-hP21QnVE0lm6beKmi4C4mqt0GFLIQKhUQyElPaO7qf0CLRKybZP0hNG7AdFOYy_L8dSiqk8hnIqNwWu8XUSPqtl4c58A9DwER7CVwGtsF2SP_OzV38s4D48HxAqSaxbEW2EB4cEZrmGINyx-oaxO3v2hYg");'></div>
+</div>
+<div>
+<p class="text-slate-900 dark:text-slate-50 text-base font-bold leading-normal">Д-р Алексей Попов</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal">Терапевт</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal mt-1">★★★★☆ 4.6</p>
+</div>
+</div>
+<div class="flex flex-col gap-3 text-center pb-3 bg-white dark:bg-slate-800/50 rounded-xl p-4 transition-shadow hover:shadow-lg">
+<div class="px-4">
+<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full" data-alt="Photo of Dr. Olga Lebedeva" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBElh4bKto7LKv4DM82n4v4aOJfWWEDwelBbuE6VLyMDBqoe-BFkwU-QM4raHWWJ314pWUbkToseiZL6JGhljEzsV9ZaA9D-YOvXaqAjPeqaZ6dheMVP-lTxTrO1f-xWv2spopS7iJxxqrwRVufeGLyeeLTgaD1qW5dkx-iLLhjOYzolnSmeUCd1lZQpEirA7c737teVsSnc8qYYwIsGohdBohOmIbZkddqjYKRLgpq_zvIU8_UfRbDBI9oe7D71tZQ3vfeeBFYU5w");'></div>
+</div>
+<div>
+<p class="text-slate-900 dark:text-slate-50 text-base font-bold leading-normal">Д-р Ольга Лебедева</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal">Хирург</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal mt-1">★★★★★ 5.0</p>
+</div>
+</div>
+<div class="flex flex-col gap-3 text-center pb-3 bg-white dark:bg-slate-800/50 rounded-xl p-4 transition-shadow hover:shadow-lg">
+<div class="px-4">
+<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full" data-alt="Photo of Dr. Dmitry Novikov" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDqdQ-JOOw0oa-a_SOWpZK5cY08rgugZwSqxnkTMHRUVxaAHYhYdu_DG9uN64VR2mFwlJcqffPBA5u-7qJ6JTiHSkRUvePxauT_tnFnpWPcy_bj8rW0U5e1e5J5wCS8O5aLDJHJaujNuQwNzdrTg1477iXfIWVMyjCrkP1_w3fkl-w4Eht9x2_fiqroAUCfIocYmlET0tCA2gLyXK8vZ7isXLfSkvHTqM_0mNabDN0-5_oLD5StSM9X8wAkhijz49Iyw0fY10jbhxw");'></div>
+</div>
+<div>
+<p class="text-slate-900 dark:text-slate-50 text-base font-bold leading-normal">Д-р Дмитрий Новиков</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal">Невролог</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal mt-1">★★★★☆ 4.8</p>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</div>
+</div>
+</body></html>

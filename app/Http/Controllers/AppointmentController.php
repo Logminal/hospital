@@ -221,6 +221,43 @@ class AppointmentController extends Controller
         ]);
     }
 
+    public function profile()
+    {
+        if (!Auth::check()) {
+            return redirect()->route('auth')->with('error', 'Для просмотра профиля необходимо войти в систему');
+        }
+
+        $user = Auth::user();
+        $appointments = Appointment::where('user_id', $user->id)
+            ->with(['doctor.specialty'])
+            ->orderBy('appointment_date', 'asc')
+            ->orderBy('appointment_time', 'asc')
+            ->get();
+
+        $upcomingAppointment = $appointments->first(function ($appointment) {
+            return in_array($appointment->status, ['pending', 'confirmed', 'visited'], true);
+        });
+
+        $displayName = trim(collect([
+            $user->surname,
+            $user->firstname,
+            $user->patronymic,
+        ])->filter()->implode(' '));
+
+        if ($displayName === '') {
+            $displayName = $user->name ?: 'Пациент';
+        }
+
+        return view('appointments.profile', [
+            'user' => $user,
+            'displayName' => $displayName,
+            'appointmentsCount' => $appointments->count(),
+            'completedAppointments' => $appointments->where('status', 'completed')->count(),
+            'cancelledAppointments' => $appointments->where('status', 'cancelled')->count(),
+            'upcomingAppointment' => $upcomingAppointment,
+        ]);
+    }
+
     public function cancelAppointment(Request $request, $id)
     {
         if (!Auth::check()) {

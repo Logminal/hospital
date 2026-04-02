@@ -7,12 +7,18 @@
 @section("main")
 
     <div class="container">
-        <a href="{{ route('main') }}" class="btn btn-secondary mb-3 mt-3">
+        <div class="d-flex gap-2 flex-wrap align-items-center mb-3 mt-3">
+        <a href="{{ route('main') }}" class="btn btn-secondary">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
                 <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
             </svg>
             Назад на главную
         </a>
+        <form action="{{ route('logout') }}" method="POST" class="d-inline">
+            @csrf
+            <button type="submit" class="btn btn-outline-secondary">&#1042;&#1099;&#1081;&#1090;&#1080;</button>
+        </form>
+        </div>
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
                 {{ session('success') }}

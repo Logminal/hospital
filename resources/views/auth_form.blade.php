@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Авторизация</title>
     <link rel="stylesheet" href="{{asset("css/style_auth_form.css")}}">
     <style>
@@ -83,7 +84,7 @@
                 <input type="password" name="password" placeholder="Пароль" required minlength="6"/>
                 <label></label>
             </div>
-            <button>Зарегистрироваться</button>
+            <button type="submit">Зарегистрироваться</button>
         </form>
     </div>
     <div class="form-container sign-in-container">
@@ -99,7 +100,7 @@
                 <input type="password" name="password" placeholder="Пароль"/>
                 <label></label>
             </div>
-            <button>Авторизироваться</button>
+            <button type="submit">Авторизироваться</button>
         </form>
     </div>
     <div class="overlay-container" id="overlayCon">
@@ -107,15 +108,15 @@
             <div class="overlay-panel overlay-left">
                 <h1>Здравствуйте!</h1>
                 <p>Войдите в систему, используя свои учетные данные</p>
-                <button>Авторизироваться</button>
+                <button type="button">Авторизироваться</button>
             </div>
             <div class="overlay-panel overlay-right">
                 <h1>Здравствуйте</h1>
                 <p>Создайте учетную запись, что бы всегда быть с нами на связи</p>
-                <button id="signUpBtn">Зарегистрироваться</button>
+                <button type="button" id="signUpBtn">Зарегистрироваться</button>
             </div>
         </div>
-        <button id="overlayBtn"></button>
+        <button type="button" id="overlayBtn"></button>
     </div>
 </div>
 
