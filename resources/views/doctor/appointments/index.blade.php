@@ -130,6 +130,109 @@
                                                         </div>
                                                     </td>
                                                 </tr>
+
+                                                @if($appointment->status == 'visited')
+                                                    <div class="modal fade" id="completeModal{{ $appointment->id }}" tabindex="-1" aria-hidden="true">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <form action="{{ route('doctor.appointments.complete', $appointment->id) }}" method="POST">
+                                                                    @csrf
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title">Завершить прием</h5>
+                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        <p><strong>Пациент:</strong> {{ $appointment->user->name }}</p>
+                                                                        <p><strong>Дата:</strong> {{ \Carbon\Carbon::parse($appointment->appointment_date)->format('d.m.Y') }}</p>
+                                                                        <p><strong>Время:</strong> {{ date('H:i', strtotime($appointment->appointment_time)) }}</p>
+                                                                        <div class="mb-3">
+                                                                            <label for="conclusion{{ $appointment->id }}" class="form-label">Заключение *</label>
+                                                                            <textarea class="form-control" id="conclusion{{ $appointment->id }}" name="conclusion" rows="5" required minlength="10"></textarea>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                                                                        <button type="submit" class="btn btn-primary">Завершить прием</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                @if($appointment->status != 'cancelled' && $appointment->status != 'completed')
+                                                    <div class="modal fade" id="cancelModal{{ $appointment->id }}" tabindex="-1" aria-hidden="true">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <form action="{{ route('doctor.appointments.cancel', $appointment->id) }}" method="POST">
+                                                                    @csrf
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title">Отмена записи</h5>
+                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        <p><strong>Пациент:</strong> {{ $appointment->user->name }}</p>
+                                                                        <p><strong>Дата:</strong> {{ \Carbon\Carbon::parse($appointment->appointment_date)->format('d.m.Y') }}</p>
+                                                                        <p><strong>Время:</strong> {{ date('H:i', strtotime($appointment->appointment_time)) }}</p>
+                                                                        <div class="mb-3">
+                                                                            <label for="cancellation_reason{{ $appointment->id }}" class="form-label">Причина отмены *</label>
+                                                                            <textarea class="form-control" id="cancellation_reason{{ $appointment->id }}" name="cancellation_reason" rows="4" required minlength="3"></textarea>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                                                                        <button type="submit" class="btn btn-danger">Отменить</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                @if($appointment->conclusion)
+                                                    <div class="modal fade" id="conclusionModal{{ $appointment->id }}" tabindex="-1" aria-hidden="true">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title">Заключение</h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <p><strong>Пациент:</strong> {{ $appointment->user->name }}</p>
+                                                                    <p><strong>Дата:</strong> {{ \Carbon\Carbon::parse($appointment->appointment_date)->format('d.m.Y') }}</p>
+                                                                    <p><strong>Время:</strong> {{ date('H:i', strtotime($appointment->appointment_time)) }}</p>
+                                                                    <hr>
+                                                                    <p>{{ $appointment->conclusion }}</p>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                @if($appointment->cancellation_reason)
+                                                    <div class="modal fade" id="reasonModal{{ $appointment->id }}" tabindex="-1" aria-hidden="true">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title">Причина отмены</h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <p><strong>Пациент:</strong> {{ $appointment->user->name }}</p>
+                                                                    <p><strong>Дата:</strong> {{ \Carbon\Carbon::parse($appointment->appointment_date)->format('d.m.Y') }}</p>
+                                                                    <hr>
+                                                                    <p>{{ $appointment->cancellation_reason }}</p>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endif
                                             @endforeach
                                         </tbody>
                                     </table>
